@@ -1,0 +1,1 @@
+{"Nodes": [{"Id": "N$PERSON", "Name": "N$PERSON", "IdProperty": {"PropertyName": "ID", "PropertyType": "System.Int32"}, "Properties": [{"PropertyName": "ZIPCODE", "PropertyType": "System.Int32"}]}], "Edges": [], "TableDescriptors": [{"EntityId": "N$PERSON", "Properties": ["ZIPCODE"], "TableOrViewName": "N$PERSON"}]}
