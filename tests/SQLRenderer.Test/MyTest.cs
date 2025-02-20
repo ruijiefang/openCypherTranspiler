@@ -97,7 +97,7 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
         public void ReadGraphitiAndOutput()
         {
             var prefix = "./TestData/";
-            var fileName = prefix+"graphiti-test.jsonlines";
+            var fileName = prefix+"filelist.txt";
 
             var l = ReadJsonLines(fileName);
             foreach (var i in l)
@@ -111,7 +111,7 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"[{i.CypherQuery}, {i.FileName}, \"ERROR: ${e.ToString().Substring(0, Math.Min(30,e.ToString().Length-1))}\"]");
+                    Console.WriteLine($"[{i.CypherQuery}, {i.FileName}, \"ERROR: ${e.ToString().Substring(0, Math.Max(30,e.ToString().Length-1))}\"]");
                 }
             }
         }
