@@ -1,0 +1,3 @@
+["MATCH (P1:N$PERSON)-[:E$WORKSAT]->()<-[:E$WORKSAT]-(P2:N$PERSON) WHERE NOT (P1)-[:E$FRIENDSWITH]->(P2) AND NOT (P1)<-[:E$FRIENDSWITH]-(P2) AND ABS(P1.BORN-P2.BORN) < 5 RETURN P1.PERSID, P1.NAME, P1.BORN, P2.PERSID, P2.NAME, P2.BORN", "./TestData/openschemas/stackoverflow_001.json"]
+["MATCH (N:N$NODE) WHERE [N.ID, N.CODE] IN [[1234,'PQR'], [4567, 'ABC']] RETURN N.ID, N.CODE", "./TestData/openschemas/stackoverflow_002.json"]
+["MATCH (C:N$CUSTOMER)-[:E$HAS_ORDER]->(O:N$SORDER) WHERE O.STATUS = 'DELIVERED' RETURN C.ID, O.ID, O.STATUS", "./TestData/openschemas/stackoverflow_003.json"]
