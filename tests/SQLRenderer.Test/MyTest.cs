@@ -102,7 +102,7 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"[{i.CypherQuery}, {i.FileName}, \"ERROR: ${e.ToString().Substring(0, Math.Min(30,e.ToString().Length-1))}\"]");
+                    Console.WriteLine($"[{i.CypherQuery}, {i.FileName}, \"ERROR: ${e.ToString().Split('\n')[0]}\"]");
                 }
             }
         }
