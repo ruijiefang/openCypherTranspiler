@@ -98,7 +98,7 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
         public void ReadGraphitiAndOutput()
         {
             var prefix = "./TestData/";
-            var fileName = prefix + "chatgpt4o.opencypher";
+            var fileName = prefix + "human.opencypher";
             List<string> outputs = new List<string>();
             var l = ReadJsonLines(fileName);
             foreach (var i in l)
