@@ -1,13 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup Condition=" '$(OS)' != 'Windows_NT' ">
-        <TargetFramework>netcoreapp2.1</TargetFramework>
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
   </PropertyGroup>
-  
-  <PropertyGroup Condition=" '$(OS)' == 'Windows_NT' "> 
-        <TargetFrameworks>netcoreapp2.1;net462</TargetFrameworks>
-  </PropertyGroup>
-  
+
+
   <PropertyGroup>
     <IsPackable>false</IsPackable>
     <RootNamespace>openCypherTranspiler.openCypherParser.Test</RootNamespace>

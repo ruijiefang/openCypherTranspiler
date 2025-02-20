@@ -510,7 +510,7 @@ RETURN p.Name as Name
                 RunQueryAndCompare(queryText);
             }
         }
-
+        
         [TestMethod]
         public void DistinctAdvancedTest()
         {
