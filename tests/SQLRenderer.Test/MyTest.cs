@@ -31,15 +31,6 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
     {    
         private readonly ILoggable _logger = new TestLogger(LoggingLevel.Normal);
 
-        private JSONGraphSQLSchema _graphDef;
-
-
-        [TestInitialize]
-        public void TestInitialize()
-        {
-            _graphDef = new JSONGraphSQLSchema(@"./TestData/MovieGraph.json");
-        }
-
         private string TranspileToSQL(string cypherQueryText, JSONGraphSQLSchema graphDef)  
         {
             try
@@ -50,7 +41,7 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
                     parser.Parse(cypherQueryText),
                     graphDef,
                     _logger);
-                var sqlRender = new SQLRenderer(_graphDef, _logger);
+                var sqlRender = new SQLRenderer(graphDef, _logger);
                 return sqlRender.RenderPlan(plan);
             }
             catch (Exception e)
@@ -102,7 +93,7 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
             var l = ReadJsonLines(fileName);
             foreach (var i in l)
             {
-                /*Console.WriteLine($"[{i.CypherQuery}, {i.FileName}");*/
+                //Console.WriteLine($"[{i.CypherQuery}, {i.FileName}");
                 var schema = new JSONGraphSQLSchema(i.FileName);
                 try
                 {
@@ -111,7 +102,7 @@ namespace openCypherTranspiler.SQLRenderer.MyTest
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine($"[{i.CypherQuery}, {i.FileName}, \"ERROR: ${e.ToString().Substring(0, Math.Max(30,e.ToString().Length-1))}\"]");
+                    Console.WriteLine($"[{i.CypherQuery}, {i.FileName}, \"ERROR: ${e.ToString().Substring(0, Math.Min(30,e.ToString().Length-1))}\"]");
                 }
             }
         }
@@ -132,8 +123,12 @@ MATCH (p:Person)-[a:ACTED_IN]->(m:Movie)
 RETURN  m.Title, p.Name
 ";*/
     var queryText = @"
-OPTIONAL MATCH (p:Person)-[a:ACTED_IN]->(m) RETURN p.Name";
-            var result = TranspileToSQL(queryText, _graphDef);
+MATCH (N:N$NODE) WHERE [N.ID, N.CODE] IN [[1234,'PQR'], [4567, 'ABC']] RETURN N.ID, N.CODE";
+    //MATCH (N:N$NODE) WHERE [N.ID, N.CODE] IN [[1234,'PQR'], [4567, 'ABC']] RETURN N.ID, N.CODE
+    // 
+    var graphDef = new JSONGraphSQLSchema("./TestData/toy_test.json");
+        //@"OPTIONAL MATCH (p:Person)-[a:ACTED_IN]->(m) RETURN p.Name";
+            var result = TranspileToSQL(queryText, graphDef);
             Console.WriteLine($"transpiled result: {result}");
         }
         
