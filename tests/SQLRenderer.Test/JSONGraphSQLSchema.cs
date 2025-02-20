@@ -19,7 +19,7 @@ namespace openCypherTranspiler.SQLRenderer.Test
     class JSONGraphSQLSchema : ISQLDBSchemaProvider
     {
         private JSONGraphSchema _schemaHelper;
-        private IDictionary<string, SQLTableDescriptor> _tableDescs;
+        public IDictionary<string, SQLTableDescriptor> _tableDescs;
 
         public JSONGraphSQLSchema(string jsonDefFile)
         {
