@@ -1,0 +1,28 @@
+{
+  "Nodes": [
+    {
+      "Id": "N$NODE",
+      "Name": "N$NODE",
+      "IdProperty": {
+        "PropertyName": "ID",
+        "PropertyType": "System.String"
+      },
+      "Properties": [
+        {
+          "PropertyName": "CODE",
+          "PropertyType": "System.String"
+        }
+      ]
+    }
+  ],
+  "Edges": [],
+  "TableDescriptors": [
+    {
+      "EntityId": "N$NODE",
+      "Properties": [
+        "CODE"
+      ],
+      "TableOrViewName": "N$NODE"
+    }
+  ]
+}
