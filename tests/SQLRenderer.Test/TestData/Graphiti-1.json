@@ -1,0 +1,132 @@
+{
+  "url": "https://stackoverflow.com/questions/41005125/how-to-translate-sql-queries-to-cypher-in-the-optimal-way",
+  "relation": {
+    "schema": {
+      "FACT": {
+        "FACT_ID": "INT",
+        "TICKET_ID": "INT",
+        "PROMOTION_FLAG": "INT",
+        "PRODUCT_ID": "INT",
+        "QUANTITY": "INT",
+        "SALES": "INT",
+        "STORE_ID": "INT"
+      },
+      "DIMPRODUCT": {
+        "PRODUCT_ID": "INT",
+        "PRODUCT_DESC": "VARCHAR"
+      },
+      "DIMSTORE": {
+        "STORE_ID": "INT"
+      }
+    },
+    "constraint": {
+      "primary": [
+        [
+          "FACT.FACT_ID"
+        ],
+        [
+          "DIMPRODUCT.PRODUCT_ID"
+        ],
+        [
+          "DIMSTORE.STORE_ID"
+        ]
+      ],
+      "foreign": [
+        [
+          "FACT.STORE_ID",
+          "DIMSTORE.STORE_ID"
+        ],
+        [
+          "FACT.PRODUCT_ID",
+          "DIMPRODUCT.PRODUCT_ID"
+        ]
+      ]
+    },
+    "sql": "SELECT A.TICKET_ID TICKET_ID, B.PRODUCT_ID, B.PRODUCT_DESC, A.PROMOTION_FLAG PROMO_FLAG, SUM(QUANTITY) SUM_UNITS, SUM(SALES) SUM_SALES FROM FACT A INNER JOIN DIMPRODUCT B ON A.PRODUCT_ID = B.PRODUCT_ID WHERE STORE_ID IN (SELECT STORE_ID FROM DIMSTORE) AND B.PRODUCT_ID IN (SELECT PRODUCT_ID FROM FACT GROUP BY 1 ORDER BY COUNT(DISTINCT TICKET_ID) DESC LIMIT 3) GROUP BY 1,2,3,4"
+  },
+  "graph": {
+    "schema": {
+      "node": {
+        "N$FACT": {
+          "FACT_ID": "INT",
+          "TICKET_ID": "INT",
+          "PROMOTION_FLAG": "INT",
+          "PID": "INT",
+          "QUANTITY": "INT",
+          "SALES": "INT",
+          "STORE_ID": "INT"
+        },
+        "N$PRODUCT": {
+          "PRODUCT_ID": "INT",
+          "PRODUCT_DESC": "VARCHAR"
+        },
+        "N$STORE": {
+          "STORE_ID": "INT"
+        }
+      },
+      "edge": {
+        "E$HAS_PRODUCT": {
+          "_ID": "INT",
+          "FACT_ID": "INT",
+          "PRODUCT_ID": "INT",
+          "SRC": "N$FACT",
+          "TGT": "N$PRODUCT"
+        },
+        "E$HAS_STORE": {
+          "_ID": "INT",
+          "FACT_ID": "INT",
+          "STORE_ID": "INT",
+          "SRC": "N$FACT",
+          "TGT": "N$STORE"
+        }
+      }
+    },
+    "constraint": {
+      "primary": [
+        [
+          "N$FACT.FACT_ID"
+        ],
+        [
+          "N$PRODUCT.PRODUCT_ID"
+        ],
+        [
+          "N$STORE.STORE_ID"
+        ],
+        [
+          "E$HAS_PRODUCT._ID"
+        ],
+        [
+          "E$HAS_STORE._ID"
+        ]
+      ]
+    },
+    "transformer": [
+      "N$FACT(FACT_ID, TICKET_ID, PROMOTION_FLAG, PRODUCT_ID, QUANTITY, SALES, STORE_ID) -> FACT(FACT_ID, TICKET_ID, PROMOTION_FLAG, PRODUCT_ID, QUANTITY, SALES, STORE_ID)",
+      "N$PRODUCT(PRODUCT_ID, PRODUCT_DESC) -> DIMPRODUCT(PRODUCT_ID, PRODUCT_DESC)",
+      "N$STORE(STORE_ID) -> DIMSTORE(STORE_ID)",
+      "E$HAS_PRODUCT(_, FACT_ID, _, FACT_ID, _) -> FACT(_, _, _, FACT_ID, _, _, _)",
+      "E$HAS_PRODUCT(_, _, PRODUCT_ID, _, PRODUCT_ID) -> DIMPRODUCT(PRODUCT_ID, _)",
+      "N$FACT(FACT_ID, _, _, _, _, _, _), E$HAS_STORE(_, FACT_ID, STORE_ID, FACT_ID, STORE_ID), N$STORE(STORE_ID) -> FACT(FACT_ID, _, _, _, _, _, STORE_ID)"
+    ]
+  },
+  "human": {
+    "cypher": "MATCH (S:N$STORE) WITH COLLECT(S.STORE_ID) AS STORE_IDS MATCH (E:N$FACT) WITH STORE_IDS, E.PID AS E_PID, COUNT(DISTINCT E.TICKET_ID) AS TICKET_ID_CNT ORDER BY TICKET_ID_CNT DESC LIMIT 3 WITH STORE_IDS, COLLECT(E_PID) AS PRODUCT_IDS MATCH (B:N$PRODUCT) WHERE B.PRODUCT_ID IN PRODUCT_IDS WITH B, STORE_IDS MATCH (A:N$FACT) WHERE A.STORE_ID IN STORE_IDS AND A.PID = B.PRODUCT_ID WITH A, B RETURN A.TICKET_ID AS TICKET_ID, B.PRODUCT_ID AS PRODUCT_ID, B.PRODUCT_DESC AS PRODUCT_DESC, A.PROMOTION_FLAG AS PROMOTION_FLAG, SUM(A.QUANTITY) AS SUM_UNITS, SUM(A.SALES) AS SUM_SALES"
+  },
+  "chatgpt3": {
+    "step": 3,
+    "cypher": "MATCH (F:N$FACT)-[:E$HAS_STORE]->(S:N$STORE), (F)-[:E$HAS_PRODUCT]->(P:N$PRODUCT) WITH F, S, P MATCH (STORE:N$STORE) WHERE S.STORE_ID = STORE.STORE_ID WITH F, P, COUNT(DISTINCT F.TICKET_ID) AS TICKET_COUNT ORDER BY TICKET_COUNT DESC LIMIT 3 WITH COLLECT(P.PRODUCT_ID) AS TOP_PRODUCT_IDS MATCH (F)-[:E$HAS_PRODUCT]->(TOP_PRODUCT:N$PRODUCT) WHERE TOP_PRODUCT.PRODUCT_ID IN TOP_PRODUCT_IDS WITH F.TICKET_ID AS TICKET_ID, TOP_PRODUCT.PRODUCT_ID AS PRODUCT_ID, TOP_PRODUCT.PRODUCT_DESC AS PRODUCT_DESC, F.PROMOTION_FLAG AS PROMO_FLAG, SUM(F.QUANTITY) AS SUM_UNITS, SUM(F.SALES) AS SUM_SALES RETURN TICKET_ID, PRODUCT_ID, PRODUCT_DESC, PROMO_FLAG, SUM_UNITS, SUM_SALES"
+  },
+  "chatgpt4": {
+    "step": 1,
+    "cypher": "MATCH (F:N$FACT)-[:E$HAS_PRODUCT]->(P:N$PRODUCT) WITH P.PRODUCT_ID AS PRODUCTID, COUNT(DISTINCT F.TICKET_ID) AS TICKETCOUNT ORDER BY TICKETCOUNT DESC LIMIT 3 WITH COLLECT(PRODUCTID) AS TOPPRODUCTS MATCH (F:N$FACT)-[:E$HAS_PRODUCT]->(P:N$PRODUCT), (F)-[:E$HAS_STORE]->(S:N$STORE) WHERE P.PRODUCT_ID IN TOPPRODUCTS WITH F.TICKET_ID AS TICKET_ID, P.PRODUCT_ID AS PRODUCT_ID, P.PRODUCT_DESC AS PRODUCT_DESC, F.PROMOTION_FLAG AS PROMO_FLAG, F.QUANTITY AS QUANTITY, F.SALES AS SALES RETURN TICKET_ID, PRODUCT_ID, PRODUCT_DESC, PROMO_FLAG, SUM(QUANTITY) AS SUM_UNITS, SUM(SALES) AS SUM_SALES "
+  },
+  "chatgpt4o": {
+    "cypher": "MATCH (f:N$FACT)-[:E$HAS_PRODUCT]->(p:N$PRODUCT), (f)-[:E$HAS_STORE]->(s:N$STORE) WITH p, f, s WHERE s.STORE_ID IS NOT NULL WITH p, f, s, COUNT(DISTINCT f.TICKET_ID) AS ticket_count ORDER BY ticket_count DESC LIMIT 3 WITH COLLECT(p.PRODUCT_ID) AS top_products MATCH (f:N$FACT)-[:E$HAS_PRODUCT]->(p:N$PRODUCT), (f)-[:E$HAS_STORE]->(s:N$STORE) WHERE p.PRODUCT_ID IN top_products RETURN f.TICKET_ID AS TICKET_ID, p.PRODUCT_ID AS PRODUCT_ID, p.PRODUCT_DESC AS PRODUCT_DESC, f.PROMOTION_FLAG AS PROMO_FLAG, SUM(f.QUANTITY) AS SUM_UNITS, SUM(f.SALES) AS SUM_SALES"
+  },
+  "cot": {
+    "cypher": "MATCH (f:N$FACT)-[:E$HAS_PRODUCT]->(p:N$PRODUCT) WITH p.PRODUCT_ID AS ProductID, COUNT(DISTINCT f.TICKET_ID) AS TicketCount ORDER BY TicketCount DESC LIMIT 3 WITH COLLECT(ProductID) AS TopProducts MATCH (f:N$FACT)-[:E$HAS_PRODUCT]->(p:N$PRODUCT) WHERE p.PRODUCT_ID IN TopProducts WITH f.TICKET_ID AS TicketID, p.PRODUCT_ID AS ProductID, p.PRODUCT_DESC AS ProductDesc, f.PROMOTION_FLAG AS PromoFlag, f.QUANTITY AS Quantity, f.SALES AS Sales RETURN TicketID, ProductID, ProductDesc, PromoFlag, SUM(Quantity) AS SumUnits, SUM(Sales) AS SumSales "
+  },
+  "neo4j-sql2cypher": {
+    "cypher": null
+  }
+}
